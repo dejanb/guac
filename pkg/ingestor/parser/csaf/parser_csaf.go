@@ -18,6 +18,7 @@ package csaf
 import (
 	"context"
 	"fmt"
+	"runtime/debug"
 	"strconv"
 
 	"github.com/guacsec/guac/pkg/assembler"
@@ -212,6 +213,7 @@ func findImpactStatement(tree *csaf.Vulnerability, product_id string) *string {
 // given ID in the CSAF document. It returns a pointer to the package
 // specification if found, otherwise an error.
 func (c *csafParser) findPkgSpec(ctx context.Context, product_id string) (*generated.PkgInputSpec, error) {
+	debug.PrintStack()
 	pref, _ := findProductsRef(ctx, c.csaf.ProductTree, product_id)
 	if pref == nil {
 		return nil, fmt.Errorf("unable to locate product reference for id %s", product_id)

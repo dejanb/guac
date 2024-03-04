@@ -192,6 +192,8 @@ func parseHelper(ctx context.Context, doc *processor.Document) (*common.GraphBui
 	if !ok {
 		return nil, fmt.Errorf("no document parser registered for type: %s", doc.Type)
 	}
+	logger := logging.FromContext(ctx)
+	logger.Infof("parsing document with parser: %v", pFunc)
 
 	p := pFunc()
 	err := p.Parse(ctx, doc)
