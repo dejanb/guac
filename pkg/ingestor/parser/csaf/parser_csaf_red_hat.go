@@ -139,6 +139,8 @@ func (c *csafParserRedHat) findPkgSpec(ctx context.Context, product_id string) (
 			}
 			purl = &purls[0]
 			logger.Infof("[csaf] product_id '%v' mapped to guac package %v", product_id, *purl)
+		} else {
+			logger.Info("[csaf] no product_id mapped to guac package %v", product_id)
 		}
 	}
 
