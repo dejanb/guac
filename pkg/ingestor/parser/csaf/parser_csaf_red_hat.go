@@ -19,7 +19,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"runtime/debug"
 	"sort"
 	"strings"
 
@@ -49,7 +48,6 @@ func NewCsafRedHatParser() common.DocumentParser {
 // given ID in the CSAF document. It returns a pointer to the package
 // specification if found, otherwise an error.
 func (c *csafParserRedHat) findPkgSpec(ctx context.Context, product_id string) (*generated.PkgInputSpec, error) {
-	debug.PrintStack()
 	logger := logging.FromContext(ctx)
 	pref, relToProdRef := findProductsRef(ctx, c.csaf.ProductTree, product_id)
 	if pref == nil {
