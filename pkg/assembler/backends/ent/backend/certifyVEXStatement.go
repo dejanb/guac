@@ -17,6 +17,9 @@ package backend
 
 import (
 	"context"
+	stdsql "database/sql"
+	"fmt"
+	"runtime/debug"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/guacsec/guac/internal/testing/ptrfrom"
@@ -28,6 +31,7 @@ import (
 	"github.com/guacsec/guac/pkg/assembler/backends/helper"
 	"github.com/guacsec/guac/pkg/assembler/graphql/model"
 	"github.com/guacsec/guac/pkg/logging"
+	"github.com/pkg/errors"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"golang.org/x/sync/errgroup"
 )
@@ -35,6 +39,7 @@ import (
 func (b *EntBackend) IngestVEXStatement(ctx context.Context, subject model.PackageOrArtifactInput, vulnerability model.VulnerabilityInputSpec, vexStatement model.VexStatementInputSpec) (*model.CertifyVEXStatement, error) {
 	logger := logging.FromContext(ctx)
 	logger.Info("ent.IngestVEXStatement")
+	fmt.Println("ent.IngestVEXStatement")
 	funcName := "IngestVEXStatement"
 
 	recordID, err := WithinTX(ctx, b.client, func(ctx context.Context) (*int, error) {
@@ -114,11 +119,13 @@ func (b *EntBackend) IngestVEXStatement(ctx context.Context, subject model.Packa
 			DoNothing().
 			ID(ctx)
 		logger.Infof("VEX ID %+v", id)
+		fmt.Printf("VEX ID %+v\n", id)
 		if err != nil {
 			logger.Infof("ERROR INGESTING VEX %+v", err)
-			// if err != stdsql.ErrNoRows {
-			// 	return nil, errors.Wrap(err, "upsert certify vex statement node")
-			// }
+			fmt.Printf("ERROR INGESTING VEX %+v\n", err)
+			if err != stdsql.ErrNoRows {
+				return nil, errors.Wrap(err, "upsert certify vex statement node")
+			}
 			// id, err = client.CertifyVex.Query().
 			// 	Where(vexStatementInputPredicate(subject, subjectID, vulnerability, vulnID, vexStatement)).
 			// 	WithPackage(func(q *ent.PackageVersionQuery) {
@@ -149,6 +156,8 @@ func (b *EntBackend) IngestVEXStatement(ctx context.Context, subject model.Packa
 func (b *EntBackend) IngestVEXStatements(ctx context.Context, subjects model.PackageOrArtifactInputs, vulnerabilities []*model.VulnerabilityInputSpec, vexStatements []*model.VexStatementInputSpec) ([]string, error) {
 	logger := logging.FromContext(ctx)
 	logger.Info("ent.IngestVEXStatements")
+	fmt.Println("ent.IngestVEXStatements")
+	debug.PrintStack()
 	var ids = make([]string, len(vexStatements))
 	eg, ctx := errgroup.WithContext(ctx)
 	for i := range vexStatements {
@@ -180,6 +189,7 @@ func (b *EntBackend) IngestVEXStatements(ctx context.Context, subjects model.Pac
 func (b *EntBackend) CertifyVEXStatement(ctx context.Context, spec *model.CertifyVEXStatementSpec) ([]*model.CertifyVEXStatement, error) {
 	logger := logging.FromContext(ctx)
 	logger.Info("ent.CertifyVEXStatement")
+	fmt.Println("ent.CertifyVEXStatement")
 	funcName := "CertifyVEXStatement"
 
 	query := b.client.CertifyVex.Query()
