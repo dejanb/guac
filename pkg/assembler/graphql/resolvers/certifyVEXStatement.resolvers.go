@@ -10,11 +10,14 @@ import (
 
 	"github.com/guacsec/guac/pkg/assembler/backends/helper"
 	"github.com/guacsec/guac/pkg/assembler/graphql/model"
+	"github.com/guacsec/guac/pkg/logging"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 // IngestVEXStatement is the resolver for the ingestVEXStatement field.
 func (r *mutationResolver) IngestVEXStatement(ctx context.Context, subject model.PackageOrArtifactInput, vulnerability model.VulnerabilityInputSpec, vexStatement model.VexStatementInputSpec) (string, error) {
+	logger := logging.FromContext(ctx)
+	logger.Info("gql.IngestVEXStatement")
 	funcName := "IngestVEXStatement"
 	if err := helper.ValidatePackageOrArtifactInput(&subject, funcName); err != nil {
 		return "", gqlerror.Errorf("%v ::  %s", funcName, err)
@@ -45,6 +48,8 @@ func (r *mutationResolver) IngestVEXStatement(ctx context.Context, subject model
 
 // IngestVEXStatements is the resolver for the ingestVEXStatements field.
 func (r *mutationResolver) IngestVEXStatements(ctx context.Context, subjects model.PackageOrArtifactInputs, vulnerabilities []*model.VulnerabilityInputSpec, vexStatements []*model.VexStatementInputSpec) ([]string, error) {
+	logger := logging.FromContext(ctx)
+	logger.Info("gql.IngestVEXStatements")
 	funcName := "IngestVEXStatements"
 	valuesDefined := 0
 	if len(subjects.Packages) > 0 {
@@ -90,6 +95,8 @@ func (r *mutationResolver) IngestVEXStatements(ctx context.Context, subjects mod
 
 // CertifyVEXStatement is the resolver for the CertifyVEXStatement field.
 func (r *queryResolver) CertifyVEXStatement(ctx context.Context, certifyVEXStatementSpec model.CertifyVEXStatementSpec) ([]*model.CertifyVEXStatement, error) {
+	logger := logging.FromContext(ctx)
+	logger.Info("gql.CertifyVEXStatement")
 	if err := helper.ValidatePackageOrArtifactQueryFilter(certifyVEXStatementSpec.Subject); err != nil {
 		return nil, gqlerror.Errorf("CertifyVEXStatement :: %s", err)
 	}

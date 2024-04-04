@@ -34,6 +34,7 @@ import (
 
 func (b *EntBackend) IngestVEXStatement(ctx context.Context, subject model.PackageOrArtifactInput, vulnerability model.VulnerabilityInputSpec, vexStatement model.VexStatementInputSpec) (*model.CertifyVEXStatement, error) {
 	logger := logging.FromContext(ctx)
+	logger.Info("ent.IngestVEXStatement")
 	funcName := "IngestVEXStatement"
 
 	recordID, err := WithinTX(ctx, b.client, func(ctx context.Context) (*int, error) {
@@ -146,6 +147,8 @@ func (b *EntBackend) IngestVEXStatement(ctx context.Context, subject model.Packa
 }
 
 func (b *EntBackend) IngestVEXStatements(ctx context.Context, subjects model.PackageOrArtifactInputs, vulnerabilities []*model.VulnerabilityInputSpec, vexStatements []*model.VexStatementInputSpec) ([]string, error) {
+	logger := logging.FromContext(ctx)
+	logger.Info("ent.IngestVEXStatements")
 	var ids = make([]string, len(vexStatements))
 	eg, ctx := errgroup.WithContext(ctx)
 	for i := range vexStatements {
@@ -175,6 +178,8 @@ func (b *EntBackend) IngestVEXStatements(ctx context.Context, subjects model.Pac
 }
 
 func (b *EntBackend) CertifyVEXStatement(ctx context.Context, spec *model.CertifyVEXStatementSpec) ([]*model.CertifyVEXStatement, error) {
+	logger := logging.FromContext(ctx)
+	logger.Info("ent.CertifyVEXStatement")
 	funcName := "CertifyVEXStatement"
 
 	query := b.client.CertifyVex.Query()
