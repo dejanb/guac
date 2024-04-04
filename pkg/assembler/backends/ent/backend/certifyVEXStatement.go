@@ -17,7 +17,6 @@ package backend
 
 import (
 	"context"
-	stdsql "database/sql"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/guacsec/guac/internal/testing/ptrfrom"
@@ -29,7 +28,6 @@ import (
 	"github.com/guacsec/guac/pkg/assembler/backends/helper"
 	"github.com/guacsec/guac/pkg/assembler/graphql/model"
 	"github.com/guacsec/guac/pkg/logging"
-	"github.com/pkg/errors"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"golang.org/x/sync/errgroup"
 )
@@ -67,14 +65,14 @@ func (b *EntBackend) IngestVEXStatement(ctx context.Context, subject model.Packa
 		var conflictWhere *sql.Predicate
 
 		// manage package or artifact
-		var subjectID int
+		//var subjectID int
 		if subject.Package != nil {
 			p, err := getPkgVersion(ctx, client.Client(), *subject.Package)
 			if err != nil {
 				return nil, Errorf("%v ::  %s", funcName, err)
 			}
 			insert.SetPackage(p)
-			subjectID = p.ID
+			//subjectID = p.ID
 			conflictColumns = append(conflictColumns, certifyvex.FieldPackageID)
 			conflictWhere = sql.And(
 				sql.NotNull(certifyvex.FieldPackageID),
@@ -88,7 +86,7 @@ func (b *EntBackend) IngestVEXStatement(ctx context.Context, subject model.Packa
 				return nil, Errorf("%v ::  %s", funcName, err)
 			}
 			insert.SetArtifactID(artID)
-			subjectID = artID
+			//subjectID = artID
 			conflictColumns = append(conflictColumns, certifyvex.FieldArtifactID)
 			conflictWhere = sql.And(
 				sql.IsNull(certifyvex.FieldPackageID),
@@ -114,27 +112,28 @@ func (b *EntBackend) IngestVEXStatement(ctx context.Context, subject model.Packa
 			).
 			DoNothing().
 			ID(ctx)
+		logger.Infof("VEX ID %+v", id)
 		if err != nil {
 			logger.Infof("ERROR INGESTING VEX %+v", err)
-			if err != stdsql.ErrNoRows {
-				return nil, errors.Wrap(err, "upsert certify vex statement node")
-			}
-			id, err = client.CertifyVex.Query().
-				Where(vexStatementInputPredicate(subject, subjectID, vulnerability, vulnID, vexStatement)).
-				WithPackage(func(q *ent.PackageVersionQuery) {
-					q.WithName(func(q *ent.PackageNameQuery) {
-						q.WithNamespace(func(q *ent.PackageNamespaceQuery) {
-							q.WithPackage()
-						})
-					})
-				}).
-				WithVulnerability(func(q *ent.VulnerabilityIDQuery) {
-					q.WithType()
-				}).
-				OnlyID(ctx)
-			if err != nil {
-				return nil, errors.Wrap(err, "get certify vex statement")
-			}
+			// if err != stdsql.ErrNoRows {
+			// 	return nil, errors.Wrap(err, "upsert certify vex statement node")
+			// }
+			// id, err = client.CertifyVex.Query().
+			// 	Where(vexStatementInputPredicate(subject, subjectID, vulnerability, vulnID, vexStatement)).
+			// 	WithPackage(func(q *ent.PackageVersionQuery) {
+			// 		q.WithName(func(q *ent.PackageNameQuery) {
+			// 			q.WithNamespace(func(q *ent.PackageNamespaceQuery) {
+			// 				q.WithPackage()
+			// 			})
+			// 		})
+			// 	}).
+			// 	WithVulnerability(func(q *ent.VulnerabilityIDQuery) {
+			// 		q.WithType()
+			// 	}).
+			// 	OnlyID(ctx)
+			// if err != nil {
+			// 	return nil, errors.Wrap(err, "get certify vex statement")
+			// }
 		}
 		return &id, nil
 	})
