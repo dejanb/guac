@@ -110,7 +110,7 @@ func startServer(cmd *cobra.Command) {
 	}
 
 	server := &http.Server{Addr: fmt.Sprintf(":%d", flags.port)}
-	logger.Info("starting server")
+	logger.Info("starting server XY")
 	go func() {
 		if proto == "https" {
 			logger.Infof("server finished: %s", server.ListenAndServeTLS(flags.tlsCertFile, flags.tlsKeyFile))

@@ -18,6 +18,7 @@ package backend
 import (
 	"context"
 	stdsql "database/sql"
+	"fmt"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/guacsec/guac/internal/testing/ptrfrom"
@@ -28,12 +29,16 @@ import (
 	"github.com/guacsec/guac/pkg/assembler/backends/ent/vulnerabilitytype"
 	"github.com/guacsec/guac/pkg/assembler/backends/helper"
 	"github.com/guacsec/guac/pkg/assembler/graphql/model"
+	"github.com/guacsec/guac/pkg/logging"
 	"github.com/pkg/errors"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"golang.org/x/sync/errgroup"
 )
 
 func (b *EntBackend) IngestVEXStatement(ctx context.Context, subject model.PackageOrArtifactInput, vulnerability model.VulnerabilityInputSpec, vexStatement model.VexStatementInputSpec) (*model.CertifyVEXStatement, error) {
+	logger := logging.FromContext(ctx)
+	logger.Info("ent.IngestVEXStatement")
+	fmt.Println("ent.IngestVEXStatement")
 	funcName := "IngestVEXStatement"
 
 	recordID, err := WithinTX(ctx, b.client, func(ctx context.Context) (*int, error) {
@@ -110,9 +115,14 @@ func (b *EntBackend) IngestVEXStatement(ctx context.Context, subject model.Packa
 				sql.ConflictColumns(conflictColumns...),
 				sql.ConflictWhere(conflictWhere),
 			).
-			DoNothing().
+			Ignore().
 			ID(ctx)
+
 		if err != nil {
+			fmt.Printf("Error %+v %+v \n", vulnerability, subject)
+			// var mJson, merr = json.MarshalIndent(vexStatement, "\t", "\t")
+			// fmt.Printf("Marshall err %+v", merr)
+			// fmt.Printf("ERROR INGESTING VEX %+v %+v\n", string(mJson), err)
 			if err != stdsql.ErrNoRows {
 				return nil, errors.Wrap(err, "upsert certify vex statement node")
 			}
@@ -132,6 +142,7 @@ func (b *EntBackend) IngestVEXStatement(ctx context.Context, subject model.Packa
 			if err != nil {
 				return nil, errors.Wrap(err, "get certify vex statement")
 			}
+			fmt.Printf("VEX ID %+v\n", id)
 		}
 		return &id, nil
 	})
