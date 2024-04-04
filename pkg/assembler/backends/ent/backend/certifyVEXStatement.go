@@ -28,12 +28,14 @@ import (
 	"github.com/guacsec/guac/pkg/assembler/backends/ent/vulnerabilitytype"
 	"github.com/guacsec/guac/pkg/assembler/backends/helper"
 	"github.com/guacsec/guac/pkg/assembler/graphql/model"
+	"github.com/guacsec/guac/pkg/logging"
 	"github.com/pkg/errors"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"golang.org/x/sync/errgroup"
 )
 
 func (b *EntBackend) IngestVEXStatement(ctx context.Context, subject model.PackageOrArtifactInput, vulnerability model.VulnerabilityInputSpec, vexStatement model.VexStatementInputSpec) (*model.CertifyVEXStatement, error) {
+	logger := logging.FromContext(ctx)
 	funcName := "IngestVEXStatement"
 
 	recordID, err := WithinTX(ctx, b.client, func(ctx context.Context) (*int, error) {
@@ -113,6 +115,7 @@ func (b *EntBackend) IngestVEXStatement(ctx context.Context, subject model.Packa
 			DoNothing().
 			ID(ctx)
 		if err != nil {
+			logger.Infof("ERROR INGESTING VEX %+v", err)
 			if err != stdsql.ErrNoRows {
 				return nil, errors.Wrap(err, "upsert certify vex statement node")
 			}
