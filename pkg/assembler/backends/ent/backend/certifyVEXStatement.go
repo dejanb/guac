@@ -115,18 +115,18 @@ func (b *EntBackend) IngestVEXStatement(ctx context.Context, subject model.Packa
 				sql.ConflictColumns(conflictColumns...),
 				sql.ConflictWhere(conflictWhere),
 			).
-			Ignore().
+			DoNothing().
 			ID(ctx)
 
 		if err != nil {
-			fmt.Printf("Error %+v %+v \n", vulnerability, subject)
+			fmt.Printf("Error %+v %+v %+v\n", vulnerability, subject, vexStatement)
 			// var mJson, merr = json.MarshalIndent(vexStatement, "\t", "\t")
 			// fmt.Printf("Marshall err %+v", merr)
 			// fmt.Printf("ERROR INGESTING VEX %+v %+v\n", string(mJson), err)
 			if err != stdsql.ErrNoRows {
 				return nil, errors.Wrap(err, "upsert certify vex statement node")
 			}
-			id, err = client.CertifyVex.Query().
+			var olds, err = client.CertifyVex.Query().
 				Where(vexStatementInputPredicate(subject, subjectID, vulnerability, vulnID, vexStatement)).
 				WithPackage(func(q *ent.PackageVersionQuery) {
 					q.WithName(func(q *ent.PackageNameQuery) {
@@ -138,7 +138,11 @@ func (b *EntBackend) IngestVEXStatement(ctx context.Context, subject model.Packa
 				WithVulnerability(func(q *ent.VulnerabilityIDQuery) {
 					q.WithType()
 				}).
-				OnlyID(ctx)
+				All(ctx)
+
+			for _, old := range olds {
+				fmt.Printf("Conflict %+v ", old)
+			}
 			if err != nil {
 				return nil, errors.Wrap(err, "get certify vex statement")
 			}
