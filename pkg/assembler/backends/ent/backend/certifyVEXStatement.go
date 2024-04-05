@@ -122,7 +122,9 @@ func (b *EntBackend) IngestVEXStatement(ctx context.Context, subject model.Packa
 
 		if err != nil {
 			logger.Infof("ERROR INGESTING VEX %+v", err)
-			var mJson, _ = json.Marshal(insert.Mutation())
+			fmt.Println("Error")
+			var mJson, merr = json.MarshalIndent(insert.Mutation(), "\t", "\t")
+			fmt.Printf("Marshall err %+v", merr)
 			fmt.Printf("ERROR INGESTING VEX %+v %+v\n", string(mJson), err)
 			if err != stdsql.ErrNoRows {
 				return nil, errors.Wrap(err, "upsert certify vex statement node")
