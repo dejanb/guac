@@ -18,6 +18,7 @@ package backend
 import (
 	"context"
 	stdsql "database/sql"
+	"encoding/json"
 	"fmt"
 	"runtime/debug"
 
@@ -121,7 +122,8 @@ func (b *EntBackend) IngestVEXStatement(ctx context.Context, subject model.Packa
 
 		if err != nil {
 			logger.Infof("ERROR INGESTING VEX %+v", err)
-			fmt.Printf("ERROR INGESTING VEX %+v %+v\n", insert.Mutation(), err)
+			var mJson, _ = json.Marshal(insert.Mutation())
+			fmt.Printf("ERROR INGESTING VEX %+v %+v\n", string(mJson), err)
 			if err != stdsql.ErrNoRows {
 				return nil, errors.Wrap(err, "upsert certify vex statement node")
 			}
